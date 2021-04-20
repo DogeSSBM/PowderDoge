@@ -32,27 +32,6 @@ void initGrid(const Length len, Particle *const grid)
 	}
 }
 
-void allInPlace(const Length len, Particle *const grid)
-{
-	const bool r = rand()&1;
-	for(uint y = len.y-2; y > 1; y--){
-		for(uint x = r?len.x-2:1; r?x > 1:x < len.x-1; x+=r?-1:1){
-			const uint lpos = lin(len, x ,y);
-			const uint dpos = lin(len, x, y + 1);
-			const uint lrpos = lin(len, x+=r?1:-1, y);
-			if(grid[lpos] != P_WATER)
-				continue;
-			if(grid[dpos] == P_VOID){
-				grid[dpos] = P_WATER;
-				grid[lpos] = P_VOID;
-			}else if(grid[lrpos] == P_VOID){
-				grid[lrpos] = P_WATER;
-				grid[lpos] = P_VOID;
-			}
-		}
-	}
-}
-
 void downInPlace(const Length len, Particle *const grid)
 {
 	for(uint y = len.y-2; y > 1; y--){
@@ -117,36 +96,59 @@ void drawGrid(const Length len, Particle *const grid)
 	}
 }
 
+void brush(const Coord pos, const uint rad, const Length len, Particle *const grid, const Particle fill)
+{
+	printf("brush: %u, %u\n", pos.x, pos.y);
+	for(int y = -rad; y < rad; y++){
+		for(int x = -rad; x < rad; x++){
+			grid[lin(len,x+pos.x,y+pos.y)] = fill;
+		}
+	}
+}
+
 int main(int argc, char const *argv[])
 {
 	Length len = {DEFAULTX, DEFAULTY};
 	init(len);
 	Particle *grid = calloc(len.x * len.y, sizeof(Particle));
-	// Particle *next = calloc(len.x * len.y, sizeof(Particle));
-
 	initGrid(len, grid);
-	// initGrid(len, next);
 
-	setColor(WHITE);
+	uint rad = 5;
 	while(1){
 		Ticks frameStart = getTicks();
 		clear();
 
+		if(mouseScrolled(MW_D)){
+			rad = clamp(rad-1, 0, 100);
+			printf("rad: %u\n", rad);
+		}
+		if(mouseScrolled(MW_U)){
+			rad = clamp(rad+1, 0, 100);
+			printf("rad: %u\n", rad);
+		}
+
 		if(mouseBtnState(MOUSE_L)){
 			if(inBound(mouse.pos.x, 1, len.x-1)&&inBound(mouse.pos.y, 1, len.y-1)){
-				grid[linCoord(len, mouse.pos)] = P_WATER;
+				brush(mouse.pos, rad, len, grid, P_WATER);
 			}
 		}
 
-		// lInPlace(len, grid);
-		// rInPlace(len, grid);
-		// downInPlace(len, grid);
+		if(mouseBtnState(MOUSE_M)){
+			if(inBound(mouse.pos.x, 1, len.x-1)&&inBound(mouse.pos.y, 1, len.y-1)){
+				brush(mouse.pos, rad, len, grid, P_SOLID);
+			}
+		}
 
-		allInPlace(len, grid);
+		if(mouseBtnState(MOUSE_R)){
+			if(inBound(mouse.pos.x, 1, len.x-1)&&inBound(mouse.pos.y, 1, len.y-1)){
+				brush(mouse.pos, rad, len, grid, P_VOID);
+			}
+		}
+
+		lInPlace(len, grid);
+		rInPlace(len, grid);
+		downInPlace(len, grid);
 		drawGrid(len, grid);
-		// const Particle *temp = grid;
-		// grid = next;
-		// next = temp;
 
 		draw();
 		events(frameStart + TPF);
