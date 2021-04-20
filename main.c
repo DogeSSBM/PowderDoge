@@ -37,8 +37,10 @@ void downInPlace(const Length len, Particle *const grid)
 	for(uint y = len.y-2; y > 1; y--){
 		for(uint x = 1; x < len.x-1; x++){
 			const uint lpos = lin(len, x ,y);
+			if(grid[lpos] != P_WATER)
+				continue;
 			const uint dpos = lin(len, x, y + 1);
-			if(grid[lpos] == P_WATER && grid[dpos] == P_VOID){
+			if(grid[dpos] == P_VOID){
 				grid[dpos] = P_WATER;
 				grid[lpos] = P_VOID;
 			}
@@ -51,9 +53,11 @@ void rInPlace(const Length len, Particle *const grid)
 	for(uint x = len.x-2; x > 1; x--){
 		for(uint y = 1; y < len.y-1; y++){
 			const uint lpos = lin(len, x ,y);
+			if(grid[lpos] != P_WATER)
+				continue;
 			const uint dpos = lin(len, x, y + 1);
 			const uint Rpos = lin(len, x + 1, y);
-			if(grid[lpos] == P_WATER && grid[dpos] != P_VOID && grid[Rpos] == P_VOID && (rand() & 1)){
+			if(grid[dpos] != P_VOID && grid[Rpos] == P_VOID && (rand() & 1)){
 				grid[Rpos] = P_WATER;
 				grid[lpos] = P_VOID;
 			}
@@ -66,9 +70,11 @@ void lInPlace(const Length len, Particle *const grid)
 	for(uint x = 1; x < len.x-1; x++){
 		for(uint y = 1; y < len.y-1; y++){
 			const uint lpos = lin(len, x ,y);
+			if(grid[lpos] != P_WATER)
+				continue;
 			const uint dpos = lin(len, x, y + 1);
 			const uint Lpos = lin(len, x - 1, y);
-			if(grid[lpos] == P_WATER && grid[dpos] != P_VOID && grid[Lpos] == P_VOID && (rand() & 1)){
+			if(grid[dpos] != P_VOID && grid[Lpos] == P_VOID && (rand() & 1)){
 				grid[Lpos] = P_WATER;
 				grid[lpos] = P_VOID;
 			}
@@ -96,9 +102,8 @@ void drawGrid(const Length len, Particle *const grid)
 	}
 }
 
-void brush(const Coord pos, const uint rad, const Length len, Particle *const grid, const Particle fill)
+void brush(const Coord pos, const int rad, const Length len, Particle *const grid, const Particle fill)
 {
-	printf("brush: %u, %u\n", pos.x, pos.y);
 	for(int y = -rad; y < rad; y++){
 		for(int x = -rad; x < rad; x++){
 			grid[lin(len,x+pos.x,y+pos.y)] = fill;
@@ -145,9 +150,24 @@ int main(int argc, char const *argv[])
 			}
 		}
 
-		lInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// lInPlace(len, grid);
 		rInPlace(len, grid);
+		lInPlace(len, grid);
 		downInPlace(len, grid);
+
+
 		drawGrid(len, grid);
 
 		draw();
