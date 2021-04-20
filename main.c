@@ -32,6 +32,27 @@ void initGrid(const Length len, Particle *const grid)
 	}
 }
 
+void allInPlace(const Length len, Particle *const grid)
+{
+	const bool r = rand()&1;
+	for(uint y = len.y-2; y > 1; y--){
+		for(uint x = r?len.x-2:1; r?x > 1:x < len.x-1; x+=r?-1:1){
+			const uint lpos = lin(len, x ,y);
+			const uint dpos = lin(len, x, y + 1);
+			const uint lrpos = lin(len, x+=r?1:-1, y);
+			if(grid[lpos] != P_WATER)
+				continue;
+			if(grid[dpos] == P_VOID){
+				grid[dpos] = P_WATER;
+				grid[lpos] = P_VOID;
+			}else if(grid[lrpos] == P_VOID){
+				grid[lrpos] = P_WATER;
+				grid[lpos] = P_VOID;
+			}
+		}
+	}
+}
+
 void downInPlace(const Length len, Particle *const grid)
 {
 	for(uint y = len.y-2; y > 1; y--){
@@ -117,10 +138,11 @@ int main(int argc, char const *argv[])
 			}
 		}
 
-		lInPlace(len, grid);
-		rInPlace(len, grid);
-		downInPlace(len, grid);
+		// lInPlace(len, grid);
+		// rInPlace(len, grid);
+		// downInPlace(len, grid);
 
+		allInPlace(len, grid);
 		drawGrid(len, grid);
 		// const Particle *temp = grid;
 		// grid = next;
